@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sports Day Event Simulation</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      color: #38bdf8;
+      text-align: center;
+    }
+
+    .controls {
+      margin-bottom: 25px;
+    }
+
+    button {
+      background-color: #0284c7;
+      color: #ffffff;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+
+    button:hover {
+      background-color: #0369a1;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background-color: #1e293b;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      border: 1px solid #334155;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      color: #94a3b8;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 8px;
+    }
+
+    #consoleLog {
+      background-color: #020617;
+      color: #38bdf8;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 18px;
+      border-radius: 8px;
+      height: 420px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.6;
+      border: 1px solid #1e293b;
+    }
+
+    .log-line {
+      margin-bottom: 6px;
+    }
+
+    .highlight {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .success {
+      color: #4ade80;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🏆 Sports Day Callback Simulation</h1>
+
+  <div class="controls">
+    <button id="startBtn" onclick="startSportsDay()">Start Sports Day</button>
+  </div>
+
+  <div class="container">
+    <h2>Event Console Output</h2>
+    <div id="consoleLog">Click "Start Sports Day" to begin the event chain...</div>
+  </div>
+
+  <script>
+    // Custom Logger to update both Browser Window Console & Screen Output UI
+    function logToScreen(message, type = "normal") {
+      console.log(message);
+      const logContainer = document.getElementById("consoleLog");
+      const line = document.createElement("div");
+      line.className = "log-line";
+
+      if (type === "highlight") line.classList.add("highlight");
+      if (type === "success") line.classList.add("success");
+
+      line.innerText = message;
+      logContainer.appendChild(line);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    /* ==========================================================================
+       1. OPENING CEREMONY
+       Initialize score object and display countdown logs every 1 second.
+       ========================================================================== */
+    function OpeningCeremony(callback) {
+      document.getElementById("consoleLog").innerHTML = "";
+      logToScreen("🎉 Welcome to the Annual Sports Day!", "highlight");
+      logToScreen("Initializing teams and scoreboards...\n");
+
+      // Initial Score object setup
+      const score = { red: 0, blue: 0, green: 0, yellow: 0 };
+      let countdown = 3;
+
+      // Log start message every second
+      const timer = setInterval(() => {
+        logToScreen(`Opening Ceremony countdown: ${countdown}...`);
+        countdown--;
+
+        if (countdown < 0) {
+          clearInterval(timer);
+          logToScreen("\nOpening Ceremony Completed! Starting initial score state:");
+          console.table(score);
+          logToScreen(`Current Score: Red: ${score.red}, Blue: ${score.blue}, Green: ${score.green}, Yellow: ${score.yellow}\n`);
+          
+          // Trigger next callback in chain after 1s
+          setTimeout(() => {
+            callback(score, LongJump);
+          }, 1000);
+        }
+      }, 1000);
+    }
+
+    /* ==========================================================================
+       2. RACE 100M
+       Simulates 100M Race after 3 sec delay, generates random times (10-15s),
+       allocates 50 pts to 1st place and 25 pts to 2nd place.
+       ========================================================================== */
+    function Race100M(score, callback) {
+      logToScreen("🏃‍♂️ [Event 1] Race 100M is starting... Please wait (3s delay)", "highlight");
+
+      setTimeout(() => {
+        // Generate random race times between 10.0 and 15.0 seconds
+        const times = {
+          red: Number((Math.random() * 5 + 10).toFixed(2)),
+          blue: Number((Math.random() * 5 + 10).toFixed(2)),
+          green: Number((Math.random() * 5 + 10).toFixed(2)),
+          yellow: Number((Math.random() * 5 + 10).toFixed(2))
+        };
+
+        logToScreen("Race Times (Seconds):");
+        logToScreen(`Red: ${times.red}s | Blue: ${times.blue}s | Green: ${times.green}s | Yellow: ${times.yellow}s`);
+
+        // Sort colors based on race time ascending (lowest time wins)
+        const sortedTeams = Object.keys(times).sort((a, b) => times[a] - times[b]);
+
+        const winner = sortedTeams[0];
+        const runnerUp = sortedTeams[1];
+
+        // Award points
+        score[winner] += 50;
+        score[runnerUp] += 25;
+
+        logToScreen(`🏆 1st Place: ${winner.toUpperCase()} (+50 pts)`);
+        logToScreen(`🥈 2nd Place: ${runnerUp.toUpperCase()} (+25 pts)`);
+        logToScreen(`Updated Scores: Red: ${score.red}, Blue: ${score.blue}, Green: ${score.green}, Yellow: ${score.yellow}\n`);
+
+        callback(score, HighJump);
+      }, 3000);
+    }
+
+    /* ==========================================================================
+       3. LONG JUMP
+       Executes after a 2 sec delay, randomly selects a winning color, 
+       and updates the score by adding 150 points.
+       ========================================================================== */
+    function LongJump(score, callback) {
+      logToScreen("🦘 [Event 2] Long Jump event is starting... Please wait (2s delay)", "highlight");
+
+      setTimeout(() => {
+        const colors = ["red", "blue", "green", "yellow"];
+        const winningColor = colors[Math.floor(Math.random() * colors.length)];
+
+        score[winningColor] += 150;
+
+        logToScreen(`🌟 Randomly selected Long Jump winner: ${winningColor.toUpperCase()} (+150 pts)`);
+        logToScreen(`Updated Scores: Red: ${score.red}, Blue: ${score.blue}, Green: ${score.green}, Yellow: ${score.yellow}\n`);
+
+        callback(score, AwardCeremony);
+      }, 2000);
+    }
+
+    /* ==========================================================================
+       4. HIGH JUMP
+       Prompts the user to enter the color with the highest jump.
+       Updates winning score by +100 pts or handles invalid/null input smoothly.
+       ========================================================================== */
+    function HighJump(score, callback) {
+      logToScreen("🚀 [Event 3] High Jump event is starting!", "highlight");
+
+      setTimeout(() => {
+        const input = prompt("High Jump Event: Which color achieved the highest jump? (red, blue, green, yellow)");
+
+        if (input && input.trim() !== "") {
+          const selectedColor = input.trim().toLowerCase();
+
+          if (score.hasOwnProperty(selectedColor)) {
+            score[selectedColor] += 100;
+            logToScreen(`🎯 Selected Color: ${selectedColor.toUpperCase()} won High Jump! (+100 pts)`);
+          } else {
+            logToScreen(`⚠️ Invalid color '${input}' entered! No points awarded for High Jump.`);
+          }
+        } else {
+          logToScreen("⚠️ Event cancelled or no input given. No points awarded for High Jump.");
+        }
+
+        logToScreen(`Updated Scores: Red: ${score.red}, Blue: ${score.blue}, Green: ${score.green}, Yellow: ${score.yellow}\n`);
+
+        callback(score);
+      }, 500);
+    }
+
+    /* ==========================================================================
+       5. AWARD CEREMONY
+       Determines final winning order and logs the overall ceremony positions.
+       ========================================================================== */
+    function AwardCeremony(score) {
+      logToScreen("🏆 [Final Event] Welcome to the Award Ceremony!", "highlight");
+      logToScreen("Calculating Final Scores...");
+
+      // Sort teams in descending order of points
+      const standings = Object.keys(score).sort((a, b) => score[b] - score[a]);
+
+      logToScreen("\n========= FINAL STANDINGS =========", "success");
+      logToScreen(`🥇 1st Place: ${standings[0].toUpperCase()} with ${score[standings[0]]} points`, "success");
+      logToScreen(`🥈 2nd Place: ${standings[1].toUpperCase()} with ${score[standings[1]]} points`);
+      logToScreen(`🥉 3rd Place: ${standings[2].toUpperCase()} with ${score[standings[2]]} points`);
+      logToScreen(`🎗️ 4th Place: ${standings[3].toUpperCase()} with ${score[standings[3]]} points`);
+      logToScreen("===================================\n", "success");
+    }
+
+    /* ==========================================================================
+       ENTRY POINT: Trigger Callback Chain
+       ========================================================================== */
+    function startSportsDay() {
+      // Chain: OpeningCeremony -> Race100M -> LongJump -> HighJump -> AwardCeremony
+      OpeningCeremony(Race100M);
+    }
+  </script>
+</body>
+</html>
